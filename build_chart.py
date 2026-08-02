@@ -66,8 +66,27 @@ def main() -> None:
 
     tpl = (BASE / "pbr_chart_template.html").read_text(encoding="utf-8")
     out = tpl.replace("__DATA__", json.dumps(payload, separators=(",", ":")))
+
+    # 아티팩트용: 호스트가 <head>/<body> 를 씌우므로 조각으로 둔다.
     (BASE / "pbr_chart.html").write_text(out, encoding="utf-8")
-    print(f"\n-> pbr_chart.html ({len(out):,} bytes)")
+
+    # GitHub Pages 용: 그대로 열리는 완전한 문서.
+    # <title>/<style> 는 head 로, 나머지는 body 로 가도록 조각을 나눈다.
+    head_end = out.index("</style>") + len("</style>")
+    page = (
+        "<!doctype html>\n<html lang=\"ko\">\n<head>\n"
+        "<meta charset=\"utf-8\">\n"
+        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+        "<meta name=\"description\" content=\"KRX 코스피·코스닥 지수 PBR 10년 추이와 20일 이동평균 ±20% 엔벨로프\">\n"
+        "<meta name=\"color-scheme\" content=\"light dark\">\n"
+        + out[:head_end]
+        + "\n</head>\n<body>"
+        + out[head_end:]
+        + "\n</body>\n</html>\n"
+    )
+    (BASE / "index.html").write_text(page, encoding="utf-8")
+
+    print(f"\n-> pbr_chart.html ({len(out):,} bytes)  index.html ({len(page):,} bytes)")
 
 
 if __name__ == "__main__":
