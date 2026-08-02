@@ -16,6 +16,18 @@
 | `serve.py` | 검증용 정적 서버. `SimpleHTTPRequestHandler`가 빠뜨리는 charset을 붙인다 |
 | `recv.py` | 수집 시 브라우저가 보낸 데이터를 파일로 받는 임시 수신 서버 |
 
+## 배포
+
+- GitHub Pages: https://junghajeon.github.io/kr-index-pbr-envelope/ (`main` 브랜치 루트의 `index.html`)
+- 임시 공개(로컬을 그대로 노출): `python serve.py 8732` 를 띄운 뒤
+
+  ```bash
+  cloudflared tunnel --url http://127.0.0.1:8732
+  ```
+
+  터널 주소는 실행할 때마다 바뀌고, `cloudflared` 를 끄면 사라진다. 원본은 `127.0.0.1` 로
+  지정한다 — `localhost` 로 두면 IPv6(`::1`) 로 먼저 붙어 연결이 실패할 수 있다.
+
 ## 다시 빌드
 
 ```bash
