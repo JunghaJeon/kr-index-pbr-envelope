@@ -13,6 +13,7 @@
     --kosdaq: #a2572c;
     --mean: #78849557;
     --mean-line: #7c8795;
+    --mean-soft: #aeb6c1;
     --over: #b0432f;
     --under: #26795a;
     --focus: #1f5c99;
@@ -36,6 +37,7 @@
       --kosdaq: #dc9058;
       --mean: #8b98a866;
       --mean-line: #8b98a8;
+      --mean-soft: #58636f;
       --over: #e2765d;
       --under: #4fb98b;
       --focus: #6fa8e0;
@@ -56,6 +58,7 @@
     --kosdaq: #dc9058;
     --mean: #8b98a866;
     --mean-line: #8b98a8;
+    --mean-soft: #58636f;
     --over: #e2765d;
     --under: #4fb98b;
     --focus: #6fa8e0;
@@ -75,6 +78,7 @@
     --kosdaq: #a2572c;
     --mean: #78849557;
     --mean-line: #7c8795;
+    --mean-soft: #aeb6c1;
     --over: #b0432f;
     --under: #26795a;
     --focus: #1f5c99;
@@ -213,7 +217,7 @@
   .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
   .swatch { width: 14px; height: 0; border-top: 2px solid; }
-  .swatch.band { height: 9px; border: 1px solid var(--mean-line); border-radius: 2px; opacity: 0.5; }
+  .swatch.band { height: 9px; border: 1px dashed var(--mean-soft); border-radius: 2px; }
 
   .detail { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
   .detail-head {
@@ -472,10 +476,11 @@
     ctx.fill();
     ctx.restore();
 
-    line(ctx, g, s.up, dom, css("--mean-line"), 1, [3, 3]);
-    line(ctx, g, s.lo, dom, css("--mean-line"), 1, [3, 3]);
-    line(ctx, g, s.ma, dom, css("--mean-line"), 1.4, null);
-    line(ctx, g, s.pbr, dom, css(s.hue), 1.7, null);
+    // 전체 뷰에서 PBR 과 이평은 평균 5px 안쪽으로 붙는다. 굵기·명도로 앞뒤를 갈라 준다.
+    line(ctx, g, s.up, dom, css("--mean-soft"), 1, [3, 3]);
+    line(ctx, g, s.lo, dom, css("--mean-soft"), 1, [3, 3]);
+    line(ctx, g, s.ma, dom, css("--mean-line"), 1, null);
+    line(ctx, g, s.pbr, dom, css(s.hue), 2.2, null);
 
     // 밴드 이탈 표시
     const step = Math.max(1, Math.floor((state.i1 - state.i0) / g.plotW));
