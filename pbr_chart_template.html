@@ -1,0 +1,685 @@
+<title>코스피·코스닥 PBR 엔벨로프</title>
+<style>
+  :root {
+    --paper: #f6f7f9;
+    --panel: #ffffff;
+    --ink: #131922;
+    --ink-2: #47526333;
+    --muted: #5d6878;
+    --faint: #8b95a4;
+    --rule: #dfe3e9;
+    --grid: #eaedf2;
+    --kospi: #1f5c99;
+    --kosdaq: #a2572c;
+    --mean: #78849557;
+    --mean-line: #7c8795;
+    --over: #b0432f;
+    --under: #26795a;
+    --focus: #1f5c99;
+    --band-alpha: 0.10;
+
+    --f-ui: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --f-num: ui-monospace, "SF Mono", "SFMono-Regular", "Roboto Mono", "DejaVu Sans Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0e1218;
+      --panel: #151b23;
+      --ink: #e8ecf1;
+      --ink-2: #8b98a833;
+      --muted: #97a2b1;
+      --faint: #6d7887;
+      --rule: #242d38;
+      --grid: #1e2630;
+      --kospi: #6fa8e0;
+      --kosdaq: #dc9058;
+      --mean: #8b98a866;
+      --mean-line: #8b98a8;
+      --over: #e2765d;
+      --under: #4fb98b;
+      --focus: #6fa8e0;
+      --band-alpha: 0.14;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #0e1218;
+    --panel: #151b23;
+    --ink: #e8ecf1;
+    --ink-2: #8b98a833;
+    --muted: #97a2b1;
+    --faint: #6d7887;
+    --rule: #242d38;
+    --grid: #1e2630;
+    --kospi: #6fa8e0;
+    --kosdaq: #dc9058;
+    --mean: #8b98a866;
+    --mean-line: #8b98a8;
+    --over: #e2765d;
+    --under: #4fb98b;
+    --focus: #6fa8e0;
+    --band-alpha: 0.14;
+  }
+
+  :root[data-theme="light"] {
+    --paper: #f6f7f9;
+    --panel: #ffffff;
+    --ink: #131922;
+    --ink-2: #47526333;
+    --muted: #5d6878;
+    --faint: #8b95a4;
+    --rule: #dfe3e9;
+    --grid: #eaedf2;
+    --kospi: #1f5c99;
+    --kosdaq: #a2572c;
+    --mean: #78849557;
+    --mean-line: #7c8795;
+    --over: #b0432f;
+    --under: #26795a;
+    --focus: #1f5c99;
+    --band-alpha: 0.10;
+  }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-ui);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 28px 20px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  header { display: flex; flex-direction: column; gap: 6px; }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(20px, 2.4vw, 27px);
+    font-weight: 620;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  .sub { margin: 0; color: var(--muted); font-size: 13.5px; }
+  .sub b { color: var(--ink); font-weight: 560; }
+
+  .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 620px) { .cards { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 13px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .card-name { font-size: 13px; font-weight: 620; letter-spacing: 0.02em; }
+  .card-name::before {
+    content: "";
+    display: inline-block;
+    width: 9px; height: 3px;
+    border-radius: 2px;
+    margin-right: 7px;
+    vertical-align: middle;
+    background: var(--hue);
+  }
+  .card-date { font-family: var(--f-num); font-size: 11.5px; color: var(--faint); }
+
+  .card-figures { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .big { font-family: var(--f-num); font-size: 27px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+
+  .pill {
+    font-family: var(--f-num);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .pill.over { color: var(--over); }
+  .pill.under { color: var(--under); }
+  .pill.mid { color: var(--muted); }
+
+  .meter { display: flex; flex-direction: column; gap: 5px; }
+  .meter-track {
+    position: relative;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--under), var(--ink-2) 50%, var(--over));
+    opacity: 0.55;
+  }
+  .meter-mark {
+    position: absolute; top: -3px;
+    width: 2px; height: 12px;
+    background: var(--ink);
+    border-radius: 1px;
+  }
+  .meter-legend { display: flex; justify-content: space-between; font-size: 11px; color: var(--faint); font-family: var(--f-num); }
+
+  .toolbar { display: flex; align-items: center; gap: 10px; min-height: 30px; flex-wrap: wrap; }
+  .hint { font-size: 12.5px; color: var(--faint); }
+
+  .reset {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--f-num);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    background: var(--panel);
+    border: 1px solid var(--focus);
+    border-radius: 999px;
+    padding: 4px 11px;
+    cursor: pointer;
+  }
+  .reset.on { display: inline-flex; }
+  .reset:hover { background: color-mix(in srgb, var(--focus) 10%, var(--panel)); }
+  .reset .x { font-size: 13px; color: var(--focus); }
+
+  .charts { display: flex; flex-direction: column; gap: 10px; }
+
+  .chart {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 10px 12px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .chart-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .chart-title { font-size: 12.5px; font-weight: 620; letter-spacing: 0.02em; }
+  .readout { font-family: var(--f-num); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .readout b { color: var(--ink); font-weight: 560; }
+
+  canvas { display: block; width: 100%; cursor: crosshair; border-radius: 4px; }
+  canvas:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 14px; height: 0; border-top: 2px solid; }
+  .swatch.band { height: 9px; border: 1px solid var(--mean-line); border-radius: 2px; opacity: 0.5; }
+
+  .detail { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  .detail-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    padding: 12px 15px; border-bottom: 1px solid var(--rule);
+  }
+  .detail-head h2 { margin: 0; font-size: 13px; font-weight: 620; letter-spacing: 0.02em; }
+  .detail-date { font-family: var(--f-num); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { padding: 8px 15px; text-align: right; white-space: nowrap; }
+  thead th { font-size: 11.5px; font-weight: 560; color: var(--faint); letter-spacing: 0.03em; }
+  tbody th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12.5px; }
+  tbody tr + tr th, tbody tr + tr td { border-top: 1px solid var(--grid); }
+  td { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+  td.k { color: var(--kospi); }
+  td.q { color: var(--kosdaq); }
+  .empty { padding: 20px 15px; color: var(--faint); font-size: 13px; }
+
+  footer { color: var(--faint); font-size: 12px; border-top: 1px solid var(--rule); padding-top: 12px; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>코스피 · 코스닥 PBR과 20일 이동평균 ±20% 엔벨로프</h1>
+    <p class="sub">한국거래소 정보데이터시스템 · <b id="span-label">—</b> · 일별 <b>2,451</b>거래일</p>
+  </header>
+
+  <section class="cards" id="cards"></section>
+
+  <div class="toolbar">
+    <button type="button" class="reset" id="reset"><span id="reset-range"></span><span class="x" aria-hidden="true">✕</span></button>
+    <span class="hint">가로로 드래그하면 그 구간만 확대됩니다. 클릭하면 그날 값이 아래 표에 나옵니다.</span>
+  </div>
+
+  <section class="charts" id="charts"></section>
+
+  <div class="legend">
+    <span><i class="swatch" style="border-color: var(--kospi)"></i>PBR</span>
+    <span><i class="swatch" style="border-color: var(--mean-line)"></i>20일 이동평균</span>
+    <span><i class="swatch band"></i>이평 ±20% 엔벨로프</span>
+    <span><i class="swatch" style="border-color: var(--over)"></i>상단 이탈</span>
+    <span><i class="swatch" style="border-color: var(--under)"></i>하단 이탈</span>
+  </div>
+
+  <section class="detail">
+    <div class="detail-head">
+      <h2>선택한 날짜</h2>
+      <span class="detail-date" id="detail-date">—</span>
+    </div>
+    <div id="detail-body" class="empty">차트를 클릭하면 그 날짜의 PBR · 이평 · 상단 · 하단 · 이평대비 · 지수 · PER · 배당수익률 · 역사 분위가 표시됩니다.</div>
+  </section>
+
+  <footer>출처 한국거래소(KRX) 정보데이터시스템. 지수 PBR은 구성종목 시가총액 가중 기준입니다.</footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const DATA = __DATA__;
+  const ENV = DATA.env;              // 엔벨로프 폭(0.20). 캔버스 너비 W 와 절대 섞지 않는다.
+  const MA_WINDOW = DATA.maWindow;
+  const DRAG_PX = 6;                 // 드래그 판정은 반드시 픽셀 기준
+  const KEYS = ["kospi", "kosdaq"];
+  const PAD = { l: 52, r: 12, t: 12 };
+
+  // ---- 파생값은 전 구간에서 한 번만 계산한다 (보이는 구간만으로 계산하면 왼쪽 끝이 틀린다)
+  const S = {};
+  for (const key of KEYS) {
+    const src = DATA.series[key];
+    const pbr = src.pbr;
+    const ma = new Array(pbr.length).fill(null);
+    let sum = 0, cnt = 0;
+    for (let i = 0; i < pbr.length; i++) {
+      const v = pbr[i];
+      if (v != null) { sum += v; cnt++; }
+      if (i >= MA_WINDOW) {
+        const drop = pbr[i - MA_WINDOW];
+        if (drop != null) { sum -= drop; cnt--; }
+      }
+      if (i >= MA_WINDOW - 1 && cnt === MA_WINDOW) ma[i] = sum / MA_WINDOW;
+    }
+    const up = ma.map(v => v == null ? null : v * (1 + ENV));
+    const lo = ma.map(v => v == null ? null : v * (1 - ENV));
+    const sorted = pbr.filter(v => v != null).slice().sort((a, b) => a - b);
+    S[key] = { ...src, ma, up, lo, sorted, hue: key === "kospi" ? "--kospi" : "--kosdaq" };
+  }
+
+  const N = DATA.dates.length;
+  const state = { i0: 0, i1: N - 1, hover: null, sel: N - 1 };
+
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const fmt = (v, d = 2) => v == null ? "—" : v.toFixed(d);
+  const signed = (v, d = 1) => v == null ? "—" : (v >= 0 ? "+" : "") + v.toFixed(d);
+  const dateLabel = s => s.replace(/-/g, ".");
+
+  // 동점은 평균 순위로 센다(pandas rank(pct=True) 와 같은 정의).
+  function percentile(key, v) {
+    if (v == null) return null;
+    const a = S[key].sorted;
+    const bound = strict => {
+      let lo = 0, hi = a.length;
+      while (lo < hi) { const m = (lo + hi) >> 1; if (strict ? a[m] <= v : a[m] < v) lo = m + 1; else hi = m; }
+      return lo;
+    };
+    const lb = bound(false), ub = bound(true);
+    return ((lb + (ub - lb + 1) / 2) / a.length) * 100;
+  }
+
+  // ---- DOM 만들기
+  const chartsEl = document.getElementById("charts");
+  const charts = KEYS.map((key, idx) => {
+    const wrap = document.createElement("div");
+    wrap.className = "chart";
+    wrap.innerHTML =
+      '<div class="chart-head"><span class="chart-title" style="color: var(' + S[key].hue + ')">' +
+      S[key].label + '</span><span class="readout"></span></div>';
+    const cv = document.createElement("canvas");
+    cv.tabIndex = 0;
+    cv.setAttribute("role", "img");
+    cv.setAttribute("aria-label", S[key].label + " PBR과 20일 이동평균 ±20% 엔벨로프 추이");
+    wrap.appendChild(cv);
+    chartsEl.appendChild(wrap);
+    return { key, cv, ctx: cv.getContext("2d"), readout: wrap.querySelector(".readout"), isLast: idx === KEYS.length - 1, drag: null };
+  });
+
+  const cardsEl = document.getElementById("cards");
+  for (const key of KEYS) {
+    const el = document.createElement("div");
+    el.className = "card";
+    el.style.setProperty("--hue", "var(" + S[key].hue + ")");
+    el.innerHTML =
+      '<div class="card-top"><span class="card-name">' + S[key].label + '</span><span class="card-date"></span></div>' +
+      '<div class="card-figures"><span class="big"></span><span class="pill"></span></div>' +
+      '<div class="meter"><div class="meter-track"><i class="meter-mark"></i></div>' +
+      '<div class="meter-legend"><span class="lo"></span><span class="ma"></span><span class="hi"></span></div></div>';
+    cardsEl.appendChild(el);
+    S[key].card = el;
+  }
+
+  document.getElementById("span-label").textContent =
+    dateLabel(DATA.dates[0]) + " – " + dateLabel(DATA.dates[N - 1]);
+
+  // ---- 좌표 변환
+  function geom(c) {
+    const W = c.cv.clientWidth, H = c.cv.clientHeight;
+    const bottom = c.isLast ? 26 : 12;
+    const plotW = W - PAD.l - PAD.r;
+    const plotH = H - PAD.t - bottom;
+    return { W, H, bottom, plotW, plotH };
+  }
+
+  function yDomain(key) {
+    const s = S[key];
+    let min = Infinity, max = -Infinity;
+    for (let i = state.i0; i <= state.i1; i++) {
+      for (const arr of [s.pbr, s.lo, s.up]) {
+        const v = arr[i];
+        if (v != null) { if (v < min) min = v; if (v > max) max = v; }
+      }
+    }
+    if (!isFinite(min)) { min = 0; max = 1; }
+    const pad = (max - min) * 0.07 || 0.05;
+    return [min - pad, max + pad];
+  }
+
+  const xAt = (g, i) => PAD.l + (state.i1 === state.i0 ? g.plotW / 2 : (i - state.i0) / (state.i1 - state.i0) * g.plotW);
+  const iAt = (g, px) => {
+    const t = (px - PAD.l) / g.plotW;
+    return Math.max(state.i0, Math.min(state.i1, Math.round(state.i0 + t * (state.i1 - state.i0))));
+  };
+
+  function ticks(count) {
+    const span = state.i1 - state.i0;
+    const out = [];
+    for (let k = 0; k <= count; k++) out.push(state.i0 + Math.round(span * k / count));
+    return [...new Set(out)];
+  }
+
+  function tickLabel(i) {
+    const span = state.i1 - state.i0;
+    const d = DATA.dates[i];
+    if (span > 700) return d.slice(0, 4);
+    if (span > 90) return d.slice(2, 7).replace("-", ".");
+    return d.slice(5).replace("-", "/");
+  }
+
+  function line(ctx, g, arr, dom, color, width, dash) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineJoin = "round";
+    if (dash) ctx.setLineDash(dash);
+    let pen = false;
+    for (let i = state.i0; i <= state.i1; i++) {
+      const v = arr[i];
+      if (v == null) { pen = false; continue; }
+      const x = xAt(g, i);
+      const y = PAD.t + (1 - (v - dom[0]) / (dom[1] - dom[0])) * g.plotH;
+      if (!pen) { ctx.moveTo(x, y); pen = true; } else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function draw(c) {
+    const s = S[c.key];
+    const g = geom(c);
+    const dpr = window.devicePixelRatio || 1;
+    c.cv.width = Math.round(g.W * dpr);
+    c.cv.height = Math.round(g.H * dpr);
+    const ctx = c.ctx;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, g.W, g.H);
+
+    const dom = yDomain(c.key);
+    const yPix = v => PAD.t + (1 - (v - dom[0]) / (dom[1] - dom[0])) * g.plotH;
+
+    // 가로 그리드 + y 눈금
+    ctx.strokeStyle = css("--grid");
+    ctx.fillStyle = css("--faint");
+    ctx.lineWidth = 1;
+    ctx.font = '11px ' + css("--f-num");
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    for (let k = 0; k <= 4; k++) {
+      const v = dom[0] + (dom[1] - dom[0]) * k / 4;
+      const y = Math.round(yPix(v)) + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(PAD.l, y);
+      ctx.lineTo(g.W - PAD.r, y);
+      ctx.stroke();
+      ctx.fillText(v.toFixed(2), PAD.l - 8, y);
+    }
+
+    // 엔벨로프 밴드
+    ctx.save();
+    ctx.beginPath();
+    let started = false;
+    for (let i = state.i0; i <= state.i1; i++) {
+      if (s.up[i] == null) continue;
+      const x = xAt(g, i), y = yPix(s.up[i]);
+      if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+    }
+    for (let i = state.i1; i >= state.i0; i--) {
+      if (s.lo[i] == null) continue;
+      ctx.lineTo(xAt(g, i), yPix(s.lo[i]));
+    }
+    ctx.closePath();
+    ctx.globalAlpha = parseFloat(css("--band-alpha"));
+    ctx.fillStyle = css(s.hue);
+    ctx.fill();
+    ctx.restore();
+
+    line(ctx, g, s.up, dom, css("--mean-line"), 1, [3, 3]);
+    line(ctx, g, s.lo, dom, css("--mean-line"), 1, [3, 3]);
+    line(ctx, g, s.ma, dom, css("--mean-line"), 1.4, null);
+    line(ctx, g, s.pbr, dom, css(s.hue), 1.7, null);
+
+    // 밴드 이탈 표시
+    const step = Math.max(1, Math.floor((state.i1 - state.i0) / g.plotW));
+    for (let i = state.i0; i <= state.i1; i += step) {
+      const v = s.pbr[i];
+      if (v == null || s.up[i] == null) continue;
+      const outside = v > s.up[i] ? "--over" : (v < s.lo[i] ? "--under" : null);
+      if (!outside) continue;
+      ctx.fillStyle = css(outside);
+      ctx.beginPath();
+      ctx.arc(xAt(g, i), yPix(v), 1.7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // x 눈금 (맨 아래 차트에만 라벨)
+    ctx.strokeStyle = css("--grid");
+    ctx.fillStyle = css("--faint");
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    for (const i of ticks(6)) {
+      const x = Math.round(xAt(g, i)) + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(x, PAD.t);
+      ctx.lineTo(x, PAD.t + g.plotH);
+      ctx.stroke();
+      if (c.isLast) ctx.fillText(tickLabel(i), x, PAD.t + g.plotH + 7);
+    }
+
+    // 드래그 중인 구간
+    if (c.drag && c.drag.moved) {
+      const a = Math.min(c.drag.x0, c.drag.x1), b = Math.max(c.drag.x0, c.drag.x1);
+      ctx.fillStyle = css("--ink-2");
+      ctx.fillRect(a, PAD.t, b - a, g.plotH);
+    }
+
+    // 크로스헤어 (두 차트가 같은 날짜로 동기화된다)
+    const mark = state.hover != null ? state.hover : state.sel;
+    if (mark != null && mark >= state.i0 && mark <= state.i1) {
+      const x = Math.round(xAt(g, mark)) + 0.5;
+      ctx.save();
+      ctx.strokeStyle = css("--mean-line");
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(x, PAD.t);
+      ctx.lineTo(x, PAD.t + g.plotH);
+      ctx.stroke();
+      ctx.restore();
+      const v = s.pbr[mark];
+      if (v != null) {
+        ctx.fillStyle = css(s.hue);
+        ctx.beginPath();
+        ctx.arc(x, yPix(v), 3.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  function readouts() {
+    const i = state.hover != null ? state.hover : state.sel;
+    for (const c of charts) {
+      const s = S[c.key];
+      const pbr = s.pbr[i], ma = s.ma[i];
+      const rel = (pbr != null && ma) ? (pbr / ma - 1) * 100 : null;
+      c.readout.innerHTML = dateLabel(DATA.dates[i]) + "  PBR <b>" + fmt(pbr) + "</b>  이평 <b>" +
+        fmt(ma) + "</b>  이평대비 <b>" + signed(rel) + "%</b>";
+    }
+  }
+
+  function cards() {
+    const i = N - 1;
+    for (const key of KEYS) {
+      const s = S[key];
+      const pbr = s.pbr[i], ma = s.ma[i], up = s.up[i], lo = s.lo[i];
+      const rel = (pbr != null && ma) ? (pbr / ma - 1) * 100 : null;
+      const pct = percentile(key, pbr);
+      const el = s.card;
+      el.querySelector(".card-date").textContent = dateLabel(DATA.dates[i]);
+      el.querySelector(".big").textContent = fmt(pbr);
+      const pill = el.querySelector(".pill");
+      pill.textContent = "이평대비 " + signed(rel) + "%";
+      pill.className = "pill " + (pbr > up ? "over" : pbr < lo ? "under" : "mid");
+      const t = Math.max(0, Math.min(1, (pbr - lo) / (up - lo)));
+      el.querySelector(".meter-mark").style.left = "calc(" + (t * 100).toFixed(1) + "% - 1px)";
+      el.querySelector(".lo").textContent = "하단 " + fmt(lo);
+      el.querySelector(".ma").textContent = "역사분위 " + (pct == null ? "—" : pct.toFixed(0) + "%");
+      el.querySelector(".hi").textContent = "상단 " + fmt(up);
+    }
+  }
+
+  const ROWS = [
+    ["PBR", (s, i) => fmt(s.pbr[i])],
+    ["20일 이동평균", (s, i) => fmt(s.ma[i], 3)],
+    ["상단 (+20%)", (s, i) => fmt(s.up[i], 3)],
+    ["하단 (−20%)", (s, i) => fmt(s.lo[i], 3)],
+    ["이평 대비", (s, i) => s.ma[i] ? signed((s.pbr[i] / s.ma[i] - 1) * 100, 2) + "%" : "—"],
+    ["지수", (s, i) => s.close[i] == null ? "—" : s.close[i].toLocaleString("ko-KR", { minimumFractionDigits: 2 })],
+    ["PER", (s, i) => fmt(s.per[i])],
+    ["배당수익률", (s, i) => s.div[i] == null ? "—" : fmt(s.div[i]) + "%"],
+    ["역사 분위", (s, i, key) => { const p = percentile(key, s.pbr[i]); return p == null ? "—" : p.toFixed(1) + "%"; }],
+  ];
+
+  function detail() {
+    const i = state.sel;
+    document.getElementById("detail-date").textContent = dateLabel(DATA.dates[i]);
+    const body = document.getElementById("detail-body");
+    body.className = "table-scroll";
+    body.innerHTML =
+      "<table><thead><tr><th scope=\"col\"></th><th scope=\"col\">코스피</th><th scope=\"col\">코스닥</th></tr></thead><tbody>" +
+      ROWS.map(([name, f]) =>
+        "<tr><th scope=\"row\">" + name + "</th>" +
+        "<td class=\"k\">" + f(S.kospi, i, "kospi") + "</td>" +
+        "<td class=\"q\">" + f(S.kosdaq, i, "kosdaq") + "</td></tr>"
+      ).join("") + "</tbody></table>";
+  }
+
+  const resetBtn = document.getElementById("reset");
+  function resetChip() {
+    const zoomed = state.i0 > 0 || state.i1 < N - 1;
+    resetBtn.classList.toggle("on", zoomed);
+    if (zoomed) {
+      document.getElementById("reset-range").textContent =
+        dateLabel(DATA.dates[state.i0]) + " ~ " + dateLabel(DATA.dates[state.i1]);
+    }
+  }
+
+  function render() {
+    charts.forEach(draw);
+    readouts();
+    resetChip();
+  }
+
+  resetBtn.addEventListener("click", () => {
+    state.i0 = 0; state.i1 = N - 1;
+    render();
+  });
+
+  // ---- 상호작용
+  for (const c of charts) {
+    const px = e => {
+      const r = c.cv.getBoundingClientRect();
+      return e.clientX - r.left;
+    };
+
+    c.cv.addEventListener("mousemove", e => {
+      const g = geom(c);
+      const x = px(e);
+      if (c.drag) {
+        c.drag.x1 = x;
+        if (Math.abs(c.drag.x1 - c.drag.x0) > DRAG_PX) c.drag.moved = true;
+      }
+      state.hover = iAt(g, x);
+      render();
+    });
+
+    c.cv.addEventListener("mouseleave", () => {
+      state.hover = null;
+      render();
+    });
+
+    c.cv.addEventListener("mousedown", e => {
+      c.drag = { x0: px(e), x1: px(e), moved: false };
+    });
+
+    window.addEventListener("mouseup", e => {
+      if (!c.drag) return;
+      const d = c.drag;
+      c.drag = null;
+      const g = geom(c);
+      if (d.moved && Math.abs(d.x1 - d.x0) > DRAG_PX) {
+        const a = iAt(g, Math.min(d.x0, d.x1)), b = iAt(g, Math.max(d.x0, d.x1));
+        if (b - a >= 4) { state.i0 = a; state.i1 = b; }
+      } else {
+        state.sel = iAt(g, d.x0);
+        detail();
+      }
+      render();
+    });
+
+    c.cv.addEventListener("keydown", e => {
+      const step = e.shiftKey ? 20 : 1;
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        e.preventDefault();
+        const dir = e.key === "ArrowLeft" ? -step : step;
+        state.sel = Math.max(state.i0, Math.min(state.i1, state.sel + dir));
+        state.hover = null;
+        detail();
+        render();
+      }
+    });
+  }
+
+  let raf = null;
+  window.addEventListener("resize", () => {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(render);
+  });
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  mq.addEventListener("change", render);
+  new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  cards();
+  detail();
+  render();
+
+  window.__chart = { state, S, DATA, render, charts, ENV, DRAG_PX };
+})();
+</script>
